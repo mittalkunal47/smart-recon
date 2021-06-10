@@ -49,7 +49,7 @@ public class ReconService {
             BigInteger.valueOf(70), BigInteger.valueOf(30),
             "0xe706138c3153631411a0d44521d67870ad965e35",
             "0xde094e3b4e014647627599690a2f5ac4f77bf734").sendAsync()
-        .get(10000, TimeUnit.MILLISECONDS);
+        .get(100000, TimeUnit.MILLISECONDS);
     return "Contract Deployed";
   }
 
@@ -60,18 +60,33 @@ public class ReconService {
     return contracts;
   }
 
-  public String bookHotel() throws Exception {
+  public String payNow(String bookingId, String bookingAmount) throws Exception {
     Recon recon = loadReconContract(getDeployedContracts().get(0),
         "0xd00a52657a69388d6050d1e57ef62622f2aaa323");
-    recon.bookHotel(new BigInteger("200000000000000000")).sendAsync()
+    recon.payNow(new BigInteger(bookingId), new BigInteger(bookingAmount)).sendAsync()
         .get(100000, TimeUnit.MILLISECONDS);
     return "bOOked!!:p";
   }
 
-  public String doRecon() throws Exception {
+  public String payLater(String bookingId, String bookingAmount) throws Exception {
+    Recon recon = loadReconContract(getDeployedContracts().get(0),
+        "0xd00a52657a69388d6050d1e57ef62622f2aaa323");
+    recon.payLater(new BigInteger(bookingId), new BigInteger(bookingAmount)).sendAsync()
+        .get(100000, TimeUnit.MILLISECONDS);
+    return "bOOked!!:p";
+  }
+
+  public Object getBookingDetails(String bookingId) throws Exception {
+    Recon recon = loadReconContract(getDeployedContracts().get(0),
+        "0xd00a52657a69388d6050d1e57ef62622f2aaa323");
+    return recon.getBookingDetails(new BigInteger(bookingId)).sendAsync()
+        .get(100000, TimeUnit.MILLISECONDS);
+  }
+
+  /*public String doRecon() throws Exception {
     Recon recon = loadReconContract(getDeployedContracts().get(0),
         "0xd00a52657a69388d6050d1e57ef62622f2aaa323");
     recon.doRecon().sendAsync().get(100000, TimeUnit.MILLISECONDS);
     return "Checkout (:";
-  }
+  }*/
 }

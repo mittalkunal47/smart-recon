@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
@@ -36,16 +37,30 @@ public class ReconController {
     return reconService.getDeployedContracts();
   }
 
-  @PostMapping(value = "/book", produces = {"application/json"})
+  @PostMapping(value = "/pay_now", produces = {"application/json"})
   public @ResponseBody
-  String bookHotel() throws Exception {
-    return reconService.bookHotel();
+  String payNow(@RequestParam("booking_id") String bookingId,
+      @RequestParam("booking_amount") String bookingAmount) throws Exception {
+    return reconService.payNow(bookingId, bookingAmount);
   }
 
-  @PostMapping(value = "/checkout", produces = {"application/json"})
+  @PostMapping(value = "/pay_later", produces = {"application/json"})
   public @ResponseBody
-  String doRecon() throws Exception {
-    return reconService.doRecon();
+  String payLater(@RequestParam("booking_id") String bookingId,
+      @RequestParam("booking_amount") String bookingAmount) throws Exception {
+    return reconService.payLater(bookingId, bookingAmount);
   }
+
+  @GetMapping(value = "/details", produces = {"application/json"})
+  public @ResponseBody
+  Object bookingDetails(@RequestParam("booking_id") String bookingId) throws Exception {
+    return reconService.getBookingDetails(bookingId);
+  }
+
+//  @PostMapping(value = "/checkout", produces = {"application/json"})
+//  public @ResponseBody
+//  String doRecon() throws Exception {
+//    return reconService.doRecon();
+//  }
 
 }

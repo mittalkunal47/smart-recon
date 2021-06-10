@@ -3,17 +3,22 @@ package recon;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Callable;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Bool;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.RemoteCall;
 import org.web3j.protocol.core.RemoteFunctionCall;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.tuples.generated.Tuple5;
 import org.web3j.tx.Contract;
 import org.web3j.tx.TransactionManager;
 import org.web3j.tx.gas.ContractGasProvider;
@@ -29,19 +34,25 @@ import org.web3j.tx.gas.ContractGasProvider;
  */
 @SuppressWarnings("rawtypes")
 public class Recon extends Contract {
-    public static final String BINARY = "608060405234801561001057600080fd5b5060405160e0806103a783398101604090815281516020830151918301516060840151608085015160a086015160c09096015160008054600160a060020a03928316600160a060020a0319918216179091556003959095556004959095556005929092556006556001805491841691831691909117905560028054929093169116179055610304806100a36000396000f3006080604052600436106100a35763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416633b182cd481146100a85780633c4dc5bd146100cf5780633f14635d146100e4578063481c6a75146100fb5780636f598eb9146101395780637060c4ad14610141578063a025ccb214610156578063a8c730711461016b578063cdde64e014610180578063dbc72b6714610195575b600080fd5b3480156100b457600080fd5b506100bd6101aa565b60408051918252519081900360200190f35b3480156100db57600080fd5b506100bd6101b0565b3480156100f057600080fd5b506100f96101b6565b005b34801561010757600080fd5b5061011061025e565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b6100f961027a565b34801561014d57600080fd5b506100bd61028e565b34801561016257600080fd5b506100bd610294565b34801561017757600080fd5b5061011061029a565b34801561018c57600080fd5b506100bd6102b6565b3480156101a157600080fd5b506101106102bc565b60055481565b60075481565b60015460055460075460405173ffffffffffffffffffffffffffffffffffffffff909316926064919092020480156108fc02916000818181858888f19350505050158015610208573d6000803e3d6000fd5b5060025460065460075460405173ffffffffffffffffffffffffffffffffffffffff909316926064919092020480156108fc02916000818181858888f1935050505015801561025b573d6000803e3d6000fd5b50565b60005473ffffffffffffffffffffffffffffffffffffffff1681565b600454341161028857600080fd5b34600755565b60045481565b60035481565b60015473ffffffffffffffffffffffffffffffffffffffff1681565b60065481565b60025473ffffffffffffffffffffffffffffffffffffffff16815600a165627a7a723058200a9ef333ba3e4861be3f542a9a32bfe9396c8a2a40bcd600cebc3add4af4f8f40029";
+    public static final String BINARY = "608060405234801561001057600080fd5b5060405160e08061082b83398101604090815281516020830151918301516060840151608085015160a086015160c09096015160018054600160a060020a03928316600160a060020a0319918216179091556004959095556005959095556006929092556007556002805491841691831691909117905560038054929093169116179055610788806100a36000396000f3006080604052600436106100c45763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416630dca825e81146100c95780631dab301e146100e35780633900d1661461014a5780633b182cd4146101655780633c4dc5bd1461018c578063481c6a75146101a15780637060c4ad146101df57806371dc7180146101f45780638db3ed60146101ff578063a025ccb214610217578063a8c730711461022c578063cdde64e014610241578063dbc72b6714610256575b600080fd5b3480156100d557600080fd5b506100e160043561026b565b005b3480156100ef57600080fd5b506100fb600435610357565b6040518086815260200185815260200184600381111561011757fe5b60ff16815260200183600181111561012b57fe5b60ff168152911515602083015250604080519182900301945092505050f35b34801561015657600080fd5b506100e160043560243561039e565b34801561017157600080fd5b5061017a6104d5565b60408051918252519081900360200190f35b34801561019857600080fd5b5061017a6104db565b3480156101ad57600080fd5b506101b66104e1565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b3480156101eb57600080fd5b5061017a6104fd565b6100e1600435610503565b34801561020b57600080fd5b506100fb60043561063a565b34801561022357600080fd5b5061017a6106e9565b34801561023857600080fd5b506101b66106ef565b34801561024d57600080fd5b5061017a61070b565b34801561026257600080fd5b506101b6610711565b6000805b60005482101561035257600080548390811061028757fe5b906000526020600020906003020190508281600001541480156102c1575060006002820154610100900460ff1660018111156102bf57fe5b145b1561030b576001810154604051339180156108fc02916000818181858888f193505050501580156102f6573d6000803e3d6000fd5b5060028101805460ff19166003179055610347565b805483148015610332575060016002820154610100900460ff16600181111561033057fe5b145b156103475760028101805460ff191660031790555b60019091019061026f565b505050565b600080548290811061036557fe5b600091825260209091206003909102018054600182015460029092015490925060ff808216916101008104821691620100009091041685565b6103a661072d565b60055482116103b457600080fd5b506040805160a081018252838152602081018381526000928201838152600160608401819052608084018590528454808201808755958052845160039182027f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563810191825594517f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56486015592517f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5659094018054959695879593919260ff199091169190849081111561048257fe5b0217905550606082015160028201805461ff0019166101008360018111156104a657fe5b02179055506080919091015160029091018054911515620100000262ff00001990921691909117905550505050565b60065481565b60085481565b60015473ffffffffffffffffffffffffffffffffffffffff1681565b60055481565b61050b61072d565b600554341161051957600080fd5b506040805160a08101825282815234602082019081526000928201838152606083018490526001608084018190528454808201808755958052845160039182027f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563810191825594517f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56486015592517f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5659094018054959695879593919260ff19909116919084908111156105e857fe5b0217905550606082015160028201805461ff00191661010083600181111561060c57fe5b02179055506080919091015160029091018054911515620100000262ff000019909216919091179055505050565b60008080808080805b6000548210156106b257600080548390811061065b57fe5b9060005260206000209060030201905087816000015414156106a757805460018201546002830154919850965060ff8082169650610100820481169550620100009091041692506106de565b600190910190610643565b805460018201546002830154919850965060ff8082169650610100820481169550620100009091041692505b505091939590929450565b60045481565b60025473ffffffffffffffffffffffffffffffffffffffff1681565b60075481565b60035473ffffffffffffffffffffffffffffffffffffffff1681565b6040805160a08101825260008082526020820181905290918201908152602001600081526000602090910152905600a165627a7a72305820d1c58550896ecae5cd499c45431cbe4f970f960569ad15baf029254eaac59d770029";
+
+    public static final String FUNC_CANCELBOOKING = "cancelBooking";
+
+    public static final String FUNC_BOOKINGS = "bookings";
+
+    public static final String FUNC_PAYLATER = "payLater";
 
     public static final String FUNC_CHOTELSHARE = "cHotelShare";
 
     public static final String FUNC_BOOKINGAMOUNT = "bookingAmount";
 
-    public static final String FUNC_DORECON = "doRecon";
-
     public static final String FUNC_MANAGER = "manager";
 
-    public static final String FUNC_BOOKHOTEL = "bookHotel";
-
     public static final String FUNC_CMINBOOKINGAMOUNT = "cMinBookingAmount";
+
+    public static final String FUNC_PAYNOW = "payNow";
+
+    public static final String FUNC_GETBOOKINGDETAILS = "getBookingDetails";
 
     public static final String FUNC_CHOTELID = "cHotelId";
 
@@ -69,6 +80,42 @@ public class Recon extends Contract {
         super(BINARY, contractAddress, web3j, transactionManager, contractGasProvider);
     }
 
+    public RemoteFunctionCall<TransactionReceipt> cancelBooking(BigInteger nBookingId) {
+        final Function function = new Function(
+                FUNC_CANCELBOOKING, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(nBookingId)), 
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function);
+    }
+
+    public RemoteFunctionCall<Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean>> bookings(BigInteger param0) {
+        final Function function = new Function(FUNC_BOOKINGS, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(param0)), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}, new TypeReference<Uint256>() {}, new TypeReference<Uint8>() {}, new TypeReference<Uint8>() {}, new TypeReference<Bool>() {}));
+        return new RemoteFunctionCall<Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean>>(function,
+                new Callable<Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean>>() {
+                    @Override
+                    public Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean> call() throws Exception {
+                        List<Type> results = executeCallMultipleValueReturn(function);
+                        return new Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean>(
+                                (BigInteger) results.get(0).getValue(), 
+                                (BigInteger) results.get(1).getValue(), 
+                                (BigInteger) results.get(2).getValue(), 
+                                (BigInteger) results.get(3).getValue(), 
+                                (Boolean) results.get(4).getValue());
+                    }
+                });
+    }
+
+    public RemoteFunctionCall<TransactionReceipt> payLater(BigInteger nBookingId, BigInteger amount) {
+        final Function function = new Function(
+                FUNC_PAYLATER, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(nBookingId), 
+                new org.web3j.abi.datatypes.generated.Uint256(amount)), 
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function);
+    }
+
     public RemoteFunctionCall<BigInteger> cHotelShare() {
         final Function function = new Function(FUNC_CHOTELSHARE, 
                 Arrays.<Type>asList(), 
@@ -83,14 +130,6 @@ public class Recon extends Contract {
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
-    public RemoteFunctionCall<TransactionReceipt> doRecon() {
-        final Function function = new Function(
-                FUNC_DORECON, 
-                Arrays.<Type>asList(), 
-                Collections.<TypeReference<?>>emptyList());
-        return executeRemoteCallTransaction(function);
-    }
-
     public RemoteFunctionCall<String> manager() {
         final Function function = new Function(FUNC_MANAGER, 
                 Arrays.<Type>asList(), 
@@ -98,19 +137,38 @@ public class Recon extends Contract {
         return executeRemoteCallSingleValueReturn(function, String.class);
     }
 
-    public RemoteFunctionCall<TransactionReceipt> bookHotel(BigInteger weiValue) {
-        final Function function = new Function(
-                FUNC_BOOKHOTEL, 
-                Arrays.<Type>asList(), 
-                Collections.<TypeReference<?>>emptyList());
-        return executeRemoteCallTransaction(function, weiValue);
-    }
-
     public RemoteFunctionCall<BigInteger> cMinBookingAmount() {
         final Function function = new Function(FUNC_CMINBOOKINGAMOUNT, 
                 Arrays.<Type>asList(), 
                 Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
         return executeRemoteCallSingleValueReturn(function, BigInteger.class);
+    }
+
+    public RemoteFunctionCall<TransactionReceipt> payNow(BigInteger nBookingId, BigInteger weiValue) {
+        final Function function = new Function(
+                FUNC_PAYNOW, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(nBookingId)), 
+                Collections.<TypeReference<?>>emptyList());
+        return executeRemoteCallTransaction(function, weiValue);
+    }
+
+    public RemoteFunctionCall<Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean>> getBookingDetails(BigInteger nBookingId) {
+        final Function function = new Function(FUNC_GETBOOKINGDETAILS, 
+                Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(nBookingId)), 
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}, new TypeReference<Uint256>() {}, new TypeReference<Uint8>() {}, new TypeReference<Uint8>() {}, new TypeReference<Bool>() {}));
+        return new RemoteFunctionCall<Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean>>(function,
+                new Callable<Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean>>() {
+                    @Override
+                    public Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean> call() throws Exception {
+                        List<Type> results = executeCallMultipleValueReturn(function);
+                        return new Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean>(
+                                (BigInteger) results.get(0).getValue(), 
+                                (BigInteger) results.get(1).getValue(), 
+                                (BigInteger) results.get(2).getValue(), 
+                                (BigInteger) results.get(3).getValue(), 
+                                (Boolean) results.get(4).getValue());
+                    }
+                });
     }
 
     public RemoteFunctionCall<BigInteger> cHotelId() {
