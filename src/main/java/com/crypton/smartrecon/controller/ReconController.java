@@ -57,10 +57,16 @@ public class ReconController {
     return reconService.getBookingDetails(bookingId);
   }
 
-//  @PostMapping(value = "/checkout", produces = {"application/json"})
-//  public @ResponseBody
-//  String doRecon() throws Exception {
-//    return reconService.doRecon();
-//  }
+  @PostMapping(value = "/checkout", produces = {"application/json"})
+  public @ResponseBody
+  String checkout(@RequestParam("booking_id") String bookingId) throws Exception {
+    return reconService.checkout(bookingId);
+  }
+
+  @PostMapping(value = "/cancel", produces = {"application/json"})
+  public @ResponseBody
+  String cancel(@RequestParam("booking_id") String bookingId) throws Exception {
+    return reconService.cancelBooking(bookingId);
+  }
 
 }

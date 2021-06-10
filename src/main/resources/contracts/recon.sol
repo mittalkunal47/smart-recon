@@ -106,4 +106,15 @@ contract Recon {
         }
     }
 
+    function checkout(uint nBookingId) public payable {
+        for (uint i = 0; i < bookings.length; i++) {
+            Booking storage booking = bookings[i];
+            if (booking.bookingId == nBookingId) {
+                cHotelOwnerAddress.transfer(booking.bookingValue * cHotelShare / 100);
+                cOyoAddress.transfer(booking.bookingValue * cOyoShare / 100);
+                booking.bookingStatus = BookingStatus.CHECKED_OUT;
+            }
+        }
+    }
+
 }

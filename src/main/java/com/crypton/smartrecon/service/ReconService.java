@@ -83,10 +83,19 @@ public class ReconService {
         .get(100000, TimeUnit.MILLISECONDS);
   }
 
-  /*public String doRecon() throws Exception {
+  public String cancelBooking(String bookingId) throws Exception {
     Recon recon = loadReconContract(getDeployedContracts().get(0),
         "0xd00a52657a69388d6050d1e57ef62622f2aaa323");
-    recon.doRecon().sendAsync().get(100000, TimeUnit.MILLISECONDS);
+    recon.cancelBooking(new BigInteger(bookingId)).sendAsync().get(100000, TimeUnit.MILLISECONDS);
+    return "bOOking Cancelled.. (:";
+  }
+
+  public String checkout(String bookingId) throws Exception {
+    Recon recon = loadReconContract(getDeployedContracts().get(0),
+        "0xd00a52657a69388d6050d1e57ef62622f2aaa323");
+    recon.checkout(new BigInteger(bookingId), new BigInteger("2000000")).sendAsync()
+        .get(100000, TimeUnit.MILLISECONDS);
     return "Checkout (:";
-  }*/
+  }
+
 }
