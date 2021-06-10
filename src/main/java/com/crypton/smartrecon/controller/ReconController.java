@@ -1,6 +1,5 @@
 package com.crypton.smartrecon.controller;
 
-import com.crypton.smartrecon.service.ReconService;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import com.crypton.smartrecon.dto.BookingDetailsResponse;
+import com.crypton.smartrecon.service.ReconService;
 
 @Controller
 public class ReconController {
@@ -39,34 +40,43 @@ public class ReconController {
 
   @PostMapping(value = "/pay_now", produces = {"application/json"})
   public @ResponseBody
-  String payNow(@RequestParam("booking_id") String bookingId,
+  BookingDetailsResponse payNow(@RequestParam("booking_id") String bookingId,
       @RequestParam("booking_amount") String bookingAmount) throws Exception {
     return reconService.payNow(bookingId, bookingAmount);
   }
 
   @PostMapping(value = "/pay_later", produces = {"application/json"})
   public @ResponseBody
-  String payLater(@RequestParam("booking_id") String bookingId,
+  BookingDetailsResponse payLater(@RequestParam("booking_id") String bookingId,
       @RequestParam("booking_amount") String bookingAmount) throws Exception {
     return reconService.payLater(bookingId, bookingAmount);
   }
 
   @GetMapping(value = "/details", produces = {"application/json"})
   public @ResponseBody
-  Object bookingDetails(@RequestParam("booking_id") String bookingId) throws Exception {
+  BookingDetailsResponse getBookingDetails(@RequestParam("booking_id") String bookingId)
+      throws Exception {
     return reconService.getBookingDetails(bookingId);
   }
 
-  @PostMapping(value = "/checkout", produces = {"application/json"})
+  @GetMapping(value = "/all_bookings", produces = {"application/json"})
   public @ResponseBody
-  String checkout(@RequestParam("booking_id") String bookingId) throws Exception {
-    return reconService.checkout(bookingId);
+  String getAllBookings()
+      throws Exception {
+    return reconService.getAllBookings();
   }
 
-  @PostMapping(value = "/cancel", produces = {"application/json"})
+  @PostMapping(value = "/update_booking", produces = {"application/json"})
   public @ResponseBody
-  String cancel(@RequestParam("booking_id") String bookingId) throws Exception {
-    return reconService.cancelBooking(bookingId);
+  BookingDetailsResponse update(@RequestParam("booking_id") String bookingId,
+      @RequestParam String action) throws Exception {
+    if (action.equalsIgnoreCase("cancel")) {
+      return reconService.cancelBooking(bookingId);
+    } else if (action.equalsIgnoreCase("checkin")) {
+      return reconService.checkIn(bookingId);
+    } else if (action.equalsIgnoreCase("checkout")) {
+      return reconService.checkout(bookingId);
+    }
+    return null;
   }
-
 }
