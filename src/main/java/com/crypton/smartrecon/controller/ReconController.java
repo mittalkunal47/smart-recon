@@ -28,7 +28,7 @@ public class ReconController {
   @PostMapping(value = "/create_contract", produces = {"application/json"})
   public @ResponseBody
   String createReconContract() throws Exception {
-    return reconService.CreateReconContract();
+    return reconService.createReconContract();
   }
 
   @GetMapping(value = "/get_all", produces = {"application/json"})
