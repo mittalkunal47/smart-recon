@@ -61,7 +61,7 @@ public class ReconController {
 
   @GetMapping(value = "/all_bookings", produces = {"application/json"})
   public @ResponseBody
-  String getAllBookings()
+  List<BookingDetailsResponse> getAllBookings()
       throws Exception {
     return reconService.getAllBookings();
   }

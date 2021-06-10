@@ -11,4 +11,5 @@ public class BookingDetailsResponse {
   String bookingAmount;
   BookingStatus bookingStatus;
   PaymentStatus paymentStatus;
+  Boolean payNow;
 }

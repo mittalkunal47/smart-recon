@@ -2,6 +2,7 @@ package com.crypton.smartrecon.service;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,17 +51,17 @@ public class ReconService {
 
   private ReconFactory loadFactoryContract() {
     return ReconFactory
-        .load(contractAddress, web3j, txManager(false), config.gas());
+        .load(contractAddress, web3j, txManager(), config.gas());
   }
 
-  private Recon loadReconContract(String contractAddress, Boolean customer) {
+  private Recon loadReconContract(String contractAddress) {
     return Recon
-        .load(contractAddress, web3j, txManager(customer), config.gas());
+        .load(contractAddress, web3j, txManager(), config.gas());
   }
 
-  private TransactionManager txManager(Boolean customer) {
+  private TransactionManager txManager() {
     return new RawTransactionManager(
-        web3j, Credentials.create(getPrivateKey(customer)), 1337);
+        web3j, Credentials.create(getPrivateKey()), 1337);
   }
 
   public String createReconContract() throws Exception {
@@ -79,7 +80,7 @@ public class ReconService {
   }
 
   public BookingDetailsResponse payNow(String bookingId, String bookingAmount) throws Exception {
-    Recon recon = loadReconContract(getDeployedContracts().get(0), true);
+    Recon recon = loadReconContract(getDeployedContracts().get(0));
     BigInteger bookingAmountInWei = Convert.toWei(bookingAmount, Unit.ETHER).toBigInteger();
     recon.payNow(new BigInteger(bookingId), bookingAmountInWei).sendAsync()
         .get(100000, TimeUnit.MILLISECONDS);
@@ -87,7 +88,7 @@ public class ReconService {
   }
 
   public BookingDetailsResponse payLater(String bookingId, String bookingAmount) throws Exception {
-    Recon recon = loadReconContract(getDeployedContracts().get(0), true);
+    Recon recon = loadReconContract(getDeployedContracts().get(0));
     BigInteger bookingAmountInWei = Convert.toWei(bookingAmount, Unit.ETHER).toBigInteger();
     recon.payLater(new BigInteger(bookingId), bookingAmountInWei).sendAsync()
         .get(100000, TimeUnit.MILLISECONDS);
@@ -95,34 +96,46 @@ public class ReconService {
   }
 
   public BookingDetailsResponse getBookingDetails(String bookingId) throws Exception {
-    Recon recon = loadReconContract(getDeployedContracts().get(0), false);
+    Recon recon = loadReconContract(getDeployedContracts().get(0));
     Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean> response =
         recon.getBookingDetails(new BigInteger(bookingId)).sendAsync()
             .get(100000, TimeUnit.MILLISECONDS);
     return getBookingDetails(response);
   }
 
-  public String getAllBookings() throws Exception {
-    Recon recon = loadReconContract(getDeployedContracts().get(0), true);
-    recon.getAllBookings();
-    return "";
+  public List<BookingDetailsResponse> getAllBookings() throws Exception {
+    Recon recon = loadReconContract(getDeployedContracts().get(0));
+    Tuple5<List<BigInteger>, List<BigInteger>, List<BigInteger>, List<BigInteger>, List<Boolean>> response =
+        recon.getAllBookings().sendAsync().get(100000, TimeUnit.MILLISECONDS);
+    List<BookingDetailsResponse> responseList = new ArrayList<>();
+    for (BigInteger i : response.component1()) {
+      int j = i.subtract(new BigInteger("1")).intValue();
+      Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean> booking = new
+          Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean>(
+          response.component1().get(j), response.component2().get(j),
+          response.component3().get(j), response.component4().get(j),
+          response.component5().get(j)
+      );
+      responseList.add(getBookingDetails(booking));
+    }
+    return responseList;
   }
 
   public BookingDetailsResponse cancelBooking(String bookingId) throws Exception {
-    Recon recon = loadReconContract(getDeployedContracts().get(0), true);
+    Recon recon = loadReconContract(getDeployedContracts().get(0));
     recon.cancelBooking(new BigInteger(bookingId)).sendAsync().get(100000, TimeUnit.MILLISECONDS);
     return getBookingDetails(bookingId);
   }
 
   public BookingDetailsResponse checkout(String bookingId) throws Exception {
-    Recon recon = loadReconContract(getDeployedContracts().get(0), true);
+    Recon recon = loadReconContract(getDeployedContracts().get(0));
     recon.checkout(new BigInteger(bookingId)).sendAsync()
         .get(100000, TimeUnit.MILLISECONDS);
     return getBookingDetails(bookingId);
   }
 
   public BookingDetailsResponse checkIn(String bookingId) throws Exception {
-    Recon recon = loadReconContract(getDeployedContracts().get(0), true);
+    Recon recon = loadReconContract(getDeployedContracts().get(0));
     Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean> bookingDetails =
         recon.getBookingDetails(new BigInteger(bookingId)).sendAsync()
             .get(100000, TimeUnit.MILLISECONDS);
@@ -147,13 +160,11 @@ public class ReconService {
         Integer.valueOf(response.component3().toString())));
     bookingDetailsResponse.setPaymentStatus(PaymentStatus.getByValue(
         Integer.valueOf(response.component4().toString())));
+    bookingDetailsResponse.setPayNow(response.component5());
     return bookingDetailsResponse;
   }
 
-  private String getPrivateKey(Boolean customer) {
-    if (Boolean.TRUE.equals(customer)) {
-      return "909bde7b6fcb97b570c3037f3b7eafb99544c61a4a54960616a4f6358e204059";
-    }
+  private String getPrivateKey() {
     return "79c6a5435ebd62d2a963d504c5fbb8cea80555a9f7f8e9da47c7bd1e2a7f9b58";
   }
 }
