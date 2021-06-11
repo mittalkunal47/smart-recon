@@ -60,8 +60,7 @@ public class ReconService {
   }
 
   private TransactionManager txManager() {
-    return new RawTransactionManager(
-        web3j, Credentials.create(getPrivateKey()), 1337);
+    return new RawTransactionManager(web3j, Credentials.create(getPrivateKey()), 1337);
   }
 
   public String createReconContract() throws Exception {
@@ -108,13 +107,12 @@ public class ReconService {
     Tuple5<List<BigInteger>, List<BigInteger>, List<BigInteger>, List<BigInteger>, List<Boolean>> response =
         recon.getAllBookings().sendAsync().get(100000, TimeUnit.MILLISECONDS);
     List<BookingDetailsResponse> responseList = new ArrayList<>();
-    for (BigInteger i : response.component1()) {
-      int j = i.subtract(new BigInteger("1")).intValue();
+    for (int i = 0; i < response.component1().size(); i++) {
       Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean> booking = new
           Tuple5<BigInteger, BigInteger, BigInteger, BigInteger, Boolean>(
-          response.component1().get(j), response.component2().get(j),
-          response.component3().get(j), response.component4().get(j),
-          response.component5().get(j)
+          response.component1().get(i), response.component2().get(i),
+          response.component3().get(i), response.component4().get(i),
+          response.component5().get(i)
       );
       responseList.add(getBookingDetails(booking));
     }
