@@ -9,9 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
-import org.web3j.tx.ClientTransactionManager;
+import org.web3j.tx.RawTransactionManager;
 import org.web3j.tx.TransactionManager;
 import recon.ReconFactory;
 
@@ -53,7 +54,11 @@ public class ReconConfig {
   }
 
   private TransactionManager txManager(Web3j web3j) {
-    return new ClientTransactionManager(web3j, ownerAddress);
+    return new RawTransactionManager(web3j, Credentials.create(getPrivateKey()), 1337);
+  }
+
+  private String getPrivateKey() {
+    return "79c6a5435ebd62d2a963d504c5fbb8cea80555a9f7f8e9da47c7bd1e2a7f9b58";
   }
 
 }
