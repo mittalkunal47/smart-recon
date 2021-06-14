@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -12,6 +13,7 @@ import com.crypton.smartrecon.dto.BookingDetailsResponse;
 import com.crypton.smartrecon.service.ReconService;
 
 @Controller
+@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class ReconController {
 
   private final ReconService reconService;
